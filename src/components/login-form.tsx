@@ -21,10 +21,10 @@ import { useToast } from '@/hooks/use-toast'
 
 const formSchema = z.object({
   identifier: z.string().min(2, {
-    message: 'Nickname or email must be at least 2 characters.',
+    message: 'O apelido ou e-mail deve ter pelo menos 2 caracteres.',
   }),
   password: z.string().min(8, {
-    message: 'Password must be at least 8 characters.',
+    message: 'A senha deve ter pelo menos 8 caracteres.',
   }),
 })
 
@@ -55,21 +55,21 @@ export default function LoginForm() {
       })
 
       if (!response.ok) {
-        throw new Error('Login failed. Check your credentials.')
+        throw new Error('Falha no login. Verifique suas credenciais.')
       }
 
       const data = await response.json()
       toast({
-        title: "Login Successful",
-        description: "Welcome back!",
+        title: "Login bem-sucedido",
+        description: "Bem vindo de volta!",
       })
       
       // Redireciona o usuário para a página do dashboard ou home após o login bem-sucedido
       router.push('/dashboard')
     } catch (error: any) {
       toast({
-        title: "Login Failed",
-        description: error.message || "Please check your credentials and try again.",
+        title: "Falha no login",
+        description: error.message || "Verifique suas credenciais e tente novamente.",
         variant: 'destructive',
       })
     } finally {
@@ -85,9 +85,9 @@ export default function LoginForm() {
           name="identifier"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nickname or Email</FormLabel>
+              <FormLabel>Apelido ou Email</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your nickname or email" {...field} />
+                <Input placeholder="Digite seu apelido ou e-mail" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -98,9 +98,9 @@ export default function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Senha</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Enter your password" {...field} />
+                <Input type="password" placeholder="Digite sua senha" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -111,7 +111,7 @@ export default function LoginForm() {
         </Button>
       </form>
       <div className="mt-4 text-center">
-        <p>Don't have an account? <Link href="/signup" className="text-primary hover:underline">Sign up</Link></p>
+        <p>Não tem uma conta? <Link href="/signup" className="text-primary hover:underline">Sign up</Link></p>
       </div>
     </Form>
   )

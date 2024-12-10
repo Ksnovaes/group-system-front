@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     });
 
     if (!response.ok) {
-      throw new Error(`Login failed: ${response.statusText}`);
+      throw new Error(`Falha no login: ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: 'Login failed. Please check your credentials and try again.' },
+      { error: 'Falha no login. Verifique suas credenciais e tente novamente.' },
       { status: 401 }
     );
   }
