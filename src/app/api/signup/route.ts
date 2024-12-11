@@ -3,16 +3,14 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   const body = await req.json();
 
-  // Validate all necessary fields are present
-  if (!body.nome || !body.sobrenome || !body.nickname || !body.apelido || !body.sexo || !body.intensidade || !body.dataNascimento || !body.telefone || !body.email || !body.password) {
+  if (!body.nome || !body.sobrenome || !body.nickname || !body.sexo || !body.intensidade || !body.dataNascimento || !body.telefone || !body.email || !body.password) {
     return NextResponse.json(
-      { message: 'Missing required fields' },
+      { message: 'Faltando os seguintes campos' },
       { status: 400 }
     );
   }
 
   try {
-    // Send data to backend service (Spring Boot, for example)
     const res = await fetch('http://localhost:8080/api/user/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -33,7 +31,7 @@ export async function POST(req: Request) {
     if (!res.ok) {
       const error = await res.json();
       return NextResponse.json(
-        { message: error.message || 'Failed to register user' },
+        { message: error.message || 'Falha ao registrar o usuário' },
         { status: res.status }
       );
     }
@@ -42,7 +40,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(user, { status: 201 });
   } catch (error) {
-    console.error('Error registering user:', error);
+    console.error('Erro registrando o usuário:', error);
     return NextResponse.json(
       { message: 'Internal Server Error' },
       { status: 500 }

@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { format, parse, isValid } from 'date-fns'
+import { useAuth } from '@/contexts/AuthContext'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -34,14 +35,13 @@ const formSchema = z.object({
   password: z.string().min(8, {
     message: 'Password must be at least 8 characters.',
   }),
-  nome: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-  sobrenome: z.string().min(2, { message: 'Surname must be at least 2 characters.' }),
-  nickname: z.string().min(2, { message: 'Nickname must be at least 2 characters. '}),
-  apelido: z.string().min(2, { message: 'Nickname must be at least 2 characters.' }),
-  telefone: z.string().min(11, { message: 'Telefone must be at least 2 characters.' }),
-  sexo: z.enum(['MASCULINO', 'FEMININO', 'OUTRO'], { required_error: 'Please select a gender.' }),
-  dataNascimento: z.date({ required_error: 'Please select a birthdate.' }),
-  intensidade: z.enum(['LAZER', 'JOGADOR', 'AMBOS'], { required_error: 'Please select your game intensity.' }),
+  nome: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
+  sobrenome: z.string().min(2, { message: 'O sobrenome deve ter pelo menos 2 caracteres.' }),
+  nickname: z.string().min(2, { message: 'O apelido deve ter pelo menos 2 caracteres.'}),
+  telefone: z.string().min(11, { message: 'O telefone deve ter pelo menos 2 caracteres.' }),
+  sexo: z.enum(['MASCULINO', 'FEMININO', 'OUTRO'], { required_error: 'Selecione um gênero.' }),
+  dataNascimento: z.date({ required_error: 'Selecione uma data de nascimento.' }),
+  intensidade: z.enum(['LAZER', 'JOGADOR', 'AMBOS'], { required_error: 'Selecione a intensidade do seu jogo.' }),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -49,6 +49,7 @@ type FormData = z.infer<typeof formSchema>
 export default function RegisterForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const { login } = useAuth()
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -58,7 +59,6 @@ export default function RegisterForm() {
       nome: '',
       sobrenome: '',
       nickname: '',
-      apelido: '',
       telefone: '',
       sexo: undefined,
       dataNascimento: undefined,
@@ -70,30 +70,28 @@ export default function RegisterForm() {
     setIsLoading(true)
     
     try {
-      // Here you send the entire form data to your backend
       const res = await fetch('/api/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values), // Send all form values here
+        body: JSON.stringify(values),
       });
-  
+
       if (!res.ok) {
         throw new Error(`Error: ${res.status}`);
       }
-  
+
       const result = await res.json();
-      console.log('Registration successful:', result);
-      router.push('/login'); // Redirect to login page after successful registration
+      console.log('Registro feito com sucesso:', result);
+      login(result.id);
+      router.push('/profile');
     } catch (error) {
-      console.error('Error during registration:', error);
-      // Handle error (e.g., show error message to user)
+      console.error('Erro durante o registro:', error);
     } finally {
       setIsLoading(false);
     }
   }
-  
 
   return (
     <Form {...form}>
@@ -105,7 +103,7 @@ export default function RegisterForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="Enter your email" {...field} />
+                <Input type="email" placeholder="Digite seu e-mail" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -116,12 +114,12 @@ export default function RegisterForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Senha</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Enter your password" {...field} />
+                <Input type="password" placeholder="Digite sua senha" {...field} />
               </FormControl>
               <FormDescription>
-                Password must be at least 8 characters long.
+                A senha deve ter pelo menos 8 caracteres.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -132,9 +130,9 @@ export default function RegisterForm() {
           name="nome"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Nome</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your name" {...field} />
+                <Input placeholder="Digite seu nome" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -145,9 +143,9 @@ export default function RegisterForm() {
           name="sobrenome"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Surname</FormLabel>
+              <FormLabel>Sobrenome</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your surname" {...field} />
+                <Input placeholder="Digite seu sobrenome" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -160,23 +158,9 @@ export default function RegisterForm() {
             <FormItem>
               <FormLabel>Nickname</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your nickname" {...field} />
+                <Input placeholder="Digite seu nickname" {...field} />
               </FormControl>
-              <FormDescription>This is the name that will be used in the app.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="apelido"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nickname</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your nickname" {...field} />
-              </FormControl>
-              <FormDescription>This is the name that will be used in the app.</FormDescription>
+              <FormDescription>Este é o nome que será usado no aplicativo.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -188,7 +172,7 @@ export default function RegisterForm() {
             <FormItem>
               <FormLabel>Telefone</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your telefone" {...field} />
+                <Input placeholder="Digite o seu telefone" {...field} />
               </FormControl>
               <FormDescription>(61) 90000-0000</FormDescription>
               <FormMessage />
@@ -200,11 +184,11 @@ export default function RegisterForm() {
           name="sexo"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Gender</FormLabel>
+              <FormLabel>Gênero</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select your gender" />
+                    <SelectValue placeholder="Selecione seu gênero" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -222,15 +206,15 @@ export default function RegisterForm() {
           name="dataNascimento"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Birthdate</FormLabel>
+              <FormLabel>Data de nascimento</FormLabel>
               <FormControl>
                 <Input
                   type="date"
-                  placeholder="YYYY-MM-DD"
+                  placeholder="DD-MM-YYYY"
                   {...field}
-                  value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
+                  value={field.value ? format(field.value, 'dd-MM-yyyy') : ''}
                   onChange={(e) => {
-                    const date = parse(e.target.value, 'yyyy-MM-dd', new Date());
+                    const date = parse(e.target.value, 'dd-MM-yyyy', new Date());
                     if (isValid(date)) {
                       field.onChange(date);
                     } else {
@@ -240,7 +224,7 @@ export default function RegisterForm() {
                 />
               </FormControl>
               <FormDescription>
-                Please enter your birthdate in the format YYYY-MM-DD
+              Por favor insira sua data de nascimento no formato DD-MM-YYYY
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -251,7 +235,7 @@ export default function RegisterForm() {
           name="intensidade"
           render={({ field }) => (
             <FormItem className="space-y-3">
-              <FormLabel>Game Intensity</FormLabel>
+              <FormLabel>Intensidade do Jogo</FormLabel>
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
@@ -271,7 +255,7 @@ export default function RegisterForm() {
                       <RadioGroupItem value="JOGADOR" />
                     </FormControl>
                     <FormLabel className="font-normal">
-                      Player
+                      Jogador
                     </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0">
@@ -279,7 +263,7 @@ export default function RegisterForm() {
                       <RadioGroupItem value="AMBOS" />
                     </FormControl>
                     <FormLabel className="font-normal">
-                      Both
+                      Ambos
                     </FormLabel>
                   </FormItem>
                 </RadioGroup>
@@ -289,7 +273,7 @@ export default function RegisterForm() {
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Registering...' : 'Register'}
+          {isLoading ? 'Registrando...' : 'Cadastre-se'}
         </Button>
       </form>
     </Form>

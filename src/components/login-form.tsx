@@ -18,13 +18,14 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/contexts/AuthContext'
 
 const formSchema = z.object({
-  identifier: z.string().min(2, {
-    message: 'Nickname or email must be at least 2 characters.',
+  email: z.string().min(2, {
+    message: 'O email precisa ter ao menos 50 caracteres.',
   }),
   password: z.string().min(8, {
-    message: 'Password must be at least 8 characters.',
+    message: 'A senha precisa ter ao menos 8 caracteres',
   }),
 })
 
@@ -32,11 +33,12 @@ export default function LoginForm() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const { login } = useAuth()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      identifier: '',
+      email: '',
       password: '',
     },
   })
@@ -44,9 +46,8 @@ export default function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
 
-    // Envia a requisição para o backend para verificar as credenciais
     try {
-      const response = await fetch('/api/user/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,21 +56,23 @@ export default function LoginForm() {
       })
 
       if (!response.ok) {
-        throw new Error('Login failed. Check your credentials.')
+        throw new Error('Falha no login, cheque as suas credenciais.')
       }
 
       const data = await response.json()
+      
+      login(data.userId)
+
       toast({
-        title: "Login Successful",
-        description: "Welcome back!",
+        title: "Logado com sucesso!",
+        description: "Bem vindo novamente!",
       })
       
-      // Redireciona o usuário para a página do dashboard ou home após o login bem-sucedido
-      router.push('/dashboard')
+      router.push('/profile')
     } catch (error: any) {
       toast({
-        title: "Login Failed",
-        description: error.message || "Please check your credentials and try again.",
+        title: "Falha no login",
+        description: error.message || "Por favor cheque suas credenciais e tente novamente.",
         variant: 'destructive',
       })
     } finally {
@@ -82,12 +85,12 @@ export default function LoginForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name="identifier"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nickname or Email</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your nickname or email" {...field} />
+                <Input placeholder="Digite seu email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -98,21 +101,22 @@ export default function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Senha</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Enter your password" {...field} />
+                <Input type="password" placeholder="Digite sua senha" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Login'}
+          {isLoading ? 'Logando...' : 'Login'}
         </Button>
       </form>
       <div className="mt-4 text-center">
-        <p>Don't have an account? <Link href="/signup" className="text-primary hover:underline">Sign up</Link></p>
+        <p>Não tem uma conta? <Link href="/signup" className="text-primary hover:underline">Criar conta</Link></p>
       </div>
     </Form>
   )
 }
+
