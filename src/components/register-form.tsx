@@ -192,9 +192,9 @@ export default function RegisterForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="MASCULINO">Male</SelectItem>
-                  <SelectItem value="FEMININO">Female</SelectItem>
-                  <SelectItem value="OUTRO">Other</SelectItem>
+                  <SelectItem value="MASCULINO">Masculino</SelectItem>
+                  <SelectItem value="FEMININO">Feminino</SelectItem>
+                  <SelectItem value="OUTRO">Outro</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -212,9 +212,9 @@ export default function RegisterForm() {
                   type="date"
                   placeholder="DD-MM-YYYY"
                   {...field}
-                  value={field.value ? format(field.value, 'dd-MM-yyyy') : ''}
+                  value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
                   onChange={(e) => {
-                    const date = parse(e.target.value, 'dd-MM-yyyy', new Date());
+                    const date = parse(e.target.value, 'yyyy-MM-dd', new Date());
                     if (isValid(date)) {
                       field.onChange(date);
                     } else {

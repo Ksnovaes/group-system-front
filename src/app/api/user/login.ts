@@ -1,34 +1,25 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import { NextResponse } from 'next/server';
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method === 'POST') {
-    const { email, password } = req.body
+export async function POST(req: Request) {
+    const body = await req.json();
 
-    try {
-      const response = await fetch('http://localhost:8080/api/user/login', {
+    const { email, password } = body;
+
+    const backendResponse = await fetch('http://localhost:8080/api/user/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
-      })
+    });
 
-      if (!response.ok) {
-        throw new Error('Falha no login')
-      }
-
-      const data = await response.json()
-
-      res.status(200).json({ userId: data.userId })
-    } catch (error) {
-      res.status(401).json({ message: 'Credenciais inválidas' })
+    if (!backendResponse.ok) {
+        return NextResponse.json(
+            { error: 'Erro ao autenticar no backend.' },
+            { status: backendResponse.status }
+        );
     }
-  } else {
-    res.setHeader('Allow', ['POST'])
-    res.status(405).end(`Method ${req.method} Not Allowed`)
-  }
-}
 
+    const data = await backendResponse.json();
+    return NextResponse.json(data);
+}

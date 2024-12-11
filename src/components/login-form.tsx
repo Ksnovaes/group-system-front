@@ -24,7 +24,7 @@ const formSchema = z.object({
   email: z.string().min(2, {
     message: 'O email precisa ter ao menos 50 caracteres.',
   }),
-  password: z.string().min(8, {
+  senha: z.string().min(8, {
     message: 'A senha precisa ter ao menos 8 caracteres',
   }),
 })
@@ -39,46 +39,57 @@ export default function LoginForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
-      password: '',
+      senha: '',
     },
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true)
-
+    setIsLoading(true);
+  
     try {
+      console.log('Enviando para API Route:', values);
+  
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(values),
-      })
-
+      });
+  
+      console.log('Resposta da API Route:', response.status, response.headers);
+  
       if (!response.ok) {
-        throw new Error('Falha no login, cheque as suas credenciais.')
+        const errorText = await response.text();
+        console.error('Erro da API Route:', errorText);
+        throw new Error('Erro ao fazer login.');
       }
-
-      const data = await response.json()
-      
-      login(data.userId)
-
+  
+      const data = await response.json();
+      console.log('Dados recebidos:', data);
+  
+      login(data.userId);
+  
       toast({
-        title: "Logado com sucesso!",
-        description: "Bem vindo novamente!",
-      })
-      
-      router.push('/profile')
+        title: 'Logado com sucesso!',
+        description: 'Bem-vindo novamente!',
+      });
+  
+      router.push('/profile');
     } catch (error: any) {
+      console.error('Erro no login:', error.message);
+  
       toast({
-        title: "Falha no login",
-        description: error.message || "Por favor cheque suas credenciais e tente novamente.",
+        title: 'Falha no login',
+        description: 'Cheque suas credenciais.',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
+  
+  
 
   return (
     <Form {...form}>
@@ -98,7 +109,7 @@ export default function LoginForm() {
         />
         <FormField
           control={form.control}
-          name="password"
+          name="senha"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Senha</FormLabel>
